@@ -78,8 +78,8 @@ void *inputOpen (NetworkCell_t *firstCell, size_t cellNum, const char *source, c
 	if ((status = NCIgetDimension (ncid, "time")) == -1) { nc_close (ncid); return ((void *) NULL); }
 	timeStepNum = (size_t) status;
 
-	if ((lons = NCgetFloatVector (ncid, "lon", &colNum)) == (float *) NULL) { inputClose (input); return ((void *) NULL); }
-	if ((lats = NCgetFloatVector (ncid, "lat", &rowNum)) == (float *) NULL) { free (lons); inputClose (input); return ((void *) NULL); }
+	if ((lons = NCgetFloatVector (ncid, "lon", &colNum)) == (float *) NULL) {              return ((void *) NULL); }
+	if ((lats = NCgetFloatVector (ncid, "lat", &rowNum)) == (float *) NULL) { free (lons); return ((void *) NULL); }
 
 	for (col = 0;col < colNum; ++col) if (lons [col] > 180.0) lons [col] = lons [col] - 360.0;
 	if ((input = (input_t *) inputCreate (cellNum, rowNum, colNum)) == (input_t *) NULL)
