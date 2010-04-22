@@ -3,7 +3,7 @@ UNIX=$(shell uname)
 ifeq ($(UNIX),Linux)
 export UNIXCC=gcc
 export UNIXCCOPS=-g -Wall -pthread -fsigned-char -D_GNU_SOURCE
-export UNIXLIBS=-pthread -lm
+export UNIXLIBS=-pthread  -lnetcdf -ludunits -lm
 export UNIXMAKE=make
 endif
 ifeq ($(UNIX),Darwin)
