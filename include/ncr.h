@@ -5,8 +5,7 @@
 
 char *get_line (char *, int *, FILE *);
 
-typedef struct GFDLnetworkCell_s
-{
+typedef struct GFDLnetworkCell_s {
 	size_t Id;
 	int   BasinId;
 	float Lon;

@@ -3,8 +3,7 @@
 
 #define RADIUS 6371.2213
 
-float sphericalDistance (float lon0, float lat0, float lon1, float lat1)
-{
+float sphericalDistance (float lon0, float lat0, float lon1, float lat1) {
 	double cosC, sinC;
 	double distance;
 
@@ -13,8 +12,7 @@ float sphericalDistance (float lon0, float lat0, float lon1, float lat1)
 
 	cosC = sin (lat0) * sin (lat1) + cos (lat0) * cos (lat1) * cos (lon1 - lon0);
 
-	if (cosC > 0.9999)
-	{
+	if (cosC > 0.9999) {
 		sinC = sqrt (cos (lat1) * cos (lat1) * sin (lon1 - lon0) * sin (lon1 - lon0) +
 		            (cos (lat0) * sin (lat1) - sin (lat0) * cos (lat1) * cos (lon1 - lon0)) *
 		            (cos (lat0) * sin (lat1) - sin (lat0) * cos (lat1) * cos (lon1 - lon0)));
