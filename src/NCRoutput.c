@@ -24,8 +24,7 @@ void outputClose (void *ptr) {
 	free (output);
 }
 
-void *outputOpen (NetworkCell_t *firstCell, const char *target, const char *varName)
-{
+void *outputOpen (NetworkCell_t *firstCell, const char *target, const char *varName) {
 	int status, ncid, dimids [3], timeId, lonId, latId, varId;
 	size_t colNum, rowNum, col, row;
 	float dx, dy, xMin, yMin, xMax, yMax;
