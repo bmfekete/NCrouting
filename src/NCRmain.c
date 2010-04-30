@@ -64,7 +64,7 @@ int main (int argc, char *argv []) {
 	for (timeStep = 0;timeStep < timeStepNum; ++timeStep) {
 		inputLoad   (runoff,  timeStep, firstCell);
 		for (timeHour = 0;timeHour < 24;timeHour += dt) Routing (lastCell,(float) dt);
-		printf ("Timestep: %4d\n",timeStep);
+		printf ("Timestep: %4d\n",(int) timeStep);
 		if (outputWrite (outflow, timeStep, firstCell) != true) {
 			goto Stop;
 		}
