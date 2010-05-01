@@ -4,7 +4,7 @@
 #include<ncr.h>
 
 int main (int argc, char *argv []) {
-	int argPos, argNum = argc;
+	int argPos, argNum = argc, nThreads = 1;
 	char *netName = (char *) NULL;
 	size_t timeStepNum, timeStep, timeHour;
 	NetworkCell_t *firstCell, *lastCell;
@@ -21,9 +21,22 @@ int main (int argc, char *argv []) {
 			argNum = CMargShiftLeft (argPos,argv,argNum);
 			continue;
 		}
+		if (CMargTest (argv [argPos],"-p","--threads")) {
+			if ((argNum = CMargShiftLeft (argPos,argv,argNum)) <= argPos) {
+				CMmsgPrint (CMmsgUsrError,"%s: Missing sampling coverage!\n",CMprgName (argv [0]));
+				return (-1);
+			}
+			if (sscanf (argv [argPos],"%d",&nThreads) != 1) {
+				CMmsgPrint (CMmsgUsrError,"%s: Invalid threads [%s]\n",CMprgName (argv [0]), argv [argPos]);
+				return (-1);
+			}
+			argNum = CMargShiftLeft (argPos,argv,argNum);
+			continue;
+		}
 		if (CMargTest (argv [argPos],"-h","--help")) {
 			CMmsgPrint (CMmsgInfo,"%s [options] <nc grid> <nc grid>\n", CMprgName(argv [0]));
 			CMmsgPrint (CMmsgInfo,"     -n,--network\n");
+			CMmsgPrint (CMmsgInfo,"     -p,--threads\n");
 			CMmsgPrint (CMmsgInfo,"     -h,--help\n");
 			return (0);
 		}
@@ -64,7 +77,7 @@ int main (int argc, char *argv []) {
 	for (timeStep = 0;timeStep < timeStepNum; ++timeStep) {
 		inputLoad   (runoff,  timeStep, firstCell);
 		for (timeHour = 0;timeHour < 24;timeHour += dt) Routing (lastCell,(float) dt);
-		printf ("Timestep: %4d\n",(int) timeStep);
+// TODO:	printf ("Timestep: %4d\n",(int) timeStep);
 		if (outputWrite (outflow, timeStep, firstCell) != true) {
 			goto Stop;
 		}
