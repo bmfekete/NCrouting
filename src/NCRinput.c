@@ -45,7 +45,7 @@ static input_t *inputCreate (size_t cell_num,size_t rowNum, size_t colNum) {
 	return (input);
 }
 
-void inputClose (void *ptr) {
+void NCRinputClose (void *ptr) {
 	input_t *input = (input_t *) ptr;
 
 	if (input->NCid != -1) nc_close (input->NCid);
@@ -55,13 +55,13 @@ void inputClose (void *ptr) {
 	free (input);
 }
 
-void *inputOpen (NetworkCell_t *firstCell, size_t cellNum, const char *source, const char *varName) {
+void *NCRinputOpen (NCRnetworkCell_t *firstCell, size_t cellNum, const char *source, const char *varName) {
 	int status, ncid, ndims, varid;
 	size_t timeStepNum, colNum, rowNum, col, row, nearestCol, nearestRow;
 	input_t *input;
 	float *lons, *lats;
 	float distance, minLon, minLat;
-	NetworkCell_t *curCell;
+	NCRnetworkCell_t *curCell;
 
 	if ((status = nc_open (source, NC_NOWRITE, &ncid))   != NC_NOERR) {
 		CMmsgPrint (CMmsgAppError, "NCError \"%s\" in: %s:%d\n", nc_strerror(status),__FILE__,__LINE__);
@@ -107,7 +107,7 @@ void *inputOpen (NetworkCell_t *firstCell, size_t cellNum, const char *source, c
 	}
 	input->NCid = ncid;
 
-	for (curCell = firstCell; curCell != (NetworkCell_t *) NULL; curCell = curCell->NextCell) {
+	for (curCell = firstCell; curCell != (NCRnetworkCell_t *) NULL; curCell = curCell->NextCell) {
 		minLon = minLat = HUGE_VAL;
 		for (row = 0; row < rowNum; ++row)  {
 			distance = fabs (curCell->Lat - lats [row]);
@@ -135,18 +135,18 @@ void *inputOpen (NetworkCell_t *firstCell, size_t cellNum, const char *source, c
 	return ((void *) input);
 }
 
-size_t inputTimeStepNum (void *ptr) {
+size_t NCRinputTimeStepNum (void *ptr) {
 	input_t *input = (input_t *) ptr;
 
 	if (input == (input_t *) NULL) return (0);
 	return (input->TimeStepNum);
 }
 
-bool inputLoad (void *ptr, size_t timeStep, NetworkCell_t *firstCell) {
+bool NCRinputLoad (void *ptr, size_t timeStep, NCRnetworkCell_t *firstCell) {
 	int status;
 	size_t start [3], count [3];
 	input_t *input = (input_t *) ptr;
-	NetworkCell_t *curCell;
+	NCRnetworkCell_t *curCell;
 
 	if (input == (input_t *) NULL) return (false);
 	if (timeStep >= input->TimeStepNum) return (false);
@@ -160,7 +160,7 @@ bool inputLoad (void *ptr, size_t timeStep, NetworkCell_t *firstCell) {
 		return (false);
 	}
 
-	for (curCell = firstCell; curCell != (NetworkCell_t *) NULL; curCell = curCell->NextCell) {
+	for (curCell = firstCell; curCell != (NCRnetworkCell_t *) NULL; curCell = curCell->NextCell) {
 		curCell->Runoff =  input->array [input->ColNum * input->RowArray [curCell->Id - 1] + input->ColArray [curCell->Id - 1]];
 		if (curCell->Runoff < 0.0) curCell->Runoff = 0.0;
 		else curCell->Runoff = curCell->Runoff * curCell->CellArea * 1000.0;
@@ -168,7 +168,7 @@ bool inputLoad (void *ptr, size_t timeStep, NetworkCell_t *firstCell) {
 	return (true);
 }
 
-float *inputTimeArray (void *ptr) {
+float *NCRinputTimeArray (void *ptr) {
 	int status, timeId, timeStepNum;
 	input_t *input = (input_t *) ptr;
 	float *array;
@@ -207,7 +207,7 @@ static bool _CopyAttributes (in_ncid, in_varid, out_ncid, out_varid) {
 	return (true);
 }
 
-bool inputCopyAttributes (void *ptr,const char *varName, int outNCid, int outVarId) {
+bool NCRinputCopyAttributes (void *ptr,const char *varName, int outNCid, int outVarId) {
 	int status, varid;
 	input_t *input = (input_t *) ptr;
 

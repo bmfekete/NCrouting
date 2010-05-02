@@ -3,7 +3,7 @@
 #include <math.h>
 #include <cm.h>
 
-typedef struct Output_s {
+typedef struct NCRoutput_s {
 	int     NCid;
 	int     VarId;
 	int     TimeId;
@@ -14,33 +14,33 @@ typedef struct Output_s {
 	float dX,    dY;
 	float Xmin, Ymin;
 	float *Array;
-} output_t;
+} NCRoutput_t;
 
-void outputClose (void *ptr) {
-	output_t *output = (output_t *) ptr;
+void NCRoutputClose (void *ptr) {
+	NCRoutput_t *output = (NCRoutput_t *) ptr;
 
 	if (output->NCid != -1) nc_close (output->NCid);
 	free (output->Array);
 	free (output);
 }
 
-void *outputOpen (NetworkCell_t *firstCell, const char *target, const char *varName) {
+void *NCRoutputOpen (NCRnetworkCell_t *firstCell, const char *target, const char *varName) {
 	int status, ncid, dimids [3], timeId, lonId, latId, varId;
 	size_t colNum, rowNum, col, row;
 	float dx, dy, xMin, yMin, xMax, yMax;
 	float *array, missingVal = -9999.0;
-	NetworkCell_t *curCell;
-	output_t *output;
+	NCRnetworkCell_t *curCell;
+	NCRoutput_t *output;
 
 	dx = dy =
 	xMin = yMin =  HUGE_VAL;
 	xMax = yMax = -HUGE_VAL;
-	for (curCell = firstCell;curCell != (NetworkCell_t *) NULL; curCell = curCell->NextCell) {
+	for (curCell = firstCell;curCell != (NCRnetworkCell_t *) NULL; curCell = curCell->NextCell) {
 		if (xMin > curCell->Lon) xMin = curCell->Lon;
 		if (yMin > curCell->Lat) yMin = curCell->Lat;
 		if (xMax < curCell->Lon) xMax = curCell->Lon;
 		if (yMax < curCell->Lat) yMax = curCell->Lat;
-		if (curCell->ToCell != (NetworkCell_t *) NULL) {
+		if (curCell->ToCell != (NCRnetworkCell_t *) NULL) {
 	   	if ((fabs (curCell->Lon - curCell->ToCell->Lon) > 0.0) && (fabs (curCell->Lon - curCell->ToCell->Lon) < dx))
 				dx = fabs (curCell->Lon - curCell->ToCell->Lon);
 			if ((fabs (curCell->Lat - curCell->ToCell->Lat) > 0.0) && (fabs (curCell->Lat - curCell->ToCell->Lat) < dy))
@@ -143,7 +143,7 @@ void *outputOpen (NetworkCell_t *firstCell, const char *target, const char *varN
 		return ((void *) NULL);
 	}
 
-	if ((output = malloc (sizeof (output_t))) == (output_t *) NULL) {
+	if ((output = malloc (sizeof (NCRoutput_t))) == (NCRoutput_t *) NULL) {
 		CMmsgPrint (CMmsgSysError,"Memory allocation error in: %s:%d\n",__FILE__,__LINE__);
 		nc_close (ncid);
 		free (array);
@@ -166,20 +166,20 @@ void *outputOpen (NetworkCell_t *firstCell, const char *target, const char *varN
 	return (output);
 }
 
-bool outputWrite (void *ptr, size_t time_step, NetworkCell_t *first_cell) {
+bool NCRoutputWrite (void *ptr, size_t time_step, NCRnetworkCell_t *first_cell) {
 	int status;
 	size_t start [3], count [3], col, row;
-	output_t *output = (output_t *) ptr;
-	NetworkCell_t *cur_cell;
+	NCRoutput_t *output = (NCRoutput_t *) ptr;
+	NCRnetworkCell_t *cur_cell;
 
-	if (output == (output_t *) NULL) return (false);
+	if (output == (NCRoutput_t *) NULL) return (false);
 	start [0] = time_step;  count [0] = 1;
 	start [1] = (size_t) 0; count [1] = output->RowNum;
 	start [2] = (size_t) 0; count [2] = output->ColNum;
 	for (row = 0;row < output->RowNum; ++row)
 		for (col = 0;col < output->ColNum; ++col) output->Array [output->ColNum * row + col] = -9999.0;
 
-	for (cur_cell = first_cell; cur_cell != (NetworkCell_t *) NULL; cur_cell = cur_cell->NextCell) {
+	for (cur_cell = first_cell; cur_cell != (NCRnetworkCell_t *) NULL; cur_cell = cur_cell->NextCell) {
 		col = (int) ((cur_cell->Lon - output->Xmin) / output->dX);
 		row = (int) ((cur_cell->Lat - output->Ymin) / output->dY);
 		output->Array [output->ColNum * row + col] =  cur_cell->Outflow;
@@ -190,12 +190,12 @@ bool outputWrite (void *ptr, size_t time_step, NetworkCell_t *first_cell) {
 	return (true);
 }
 
-bool outputCopyInput (void *inputPtr, void *outputPtr) {
+bool NCRoutputCopyInput (void *inputPtr, void *outputPtr) {
 	float *array;
 	int status;
-	output_t *output = (output_t *) outputPtr;
+	NCRoutput_t *output = (NCRoutput_t *) outputPtr;
 
-	if ((array = inputTimeArray (inputPtr)) == (float *) NULL) return (false);
+	if ((array = NCRinputTimeArray (inputPtr)) == (float *) NULL) return (false);
 	if ((status = nc_put_var_float (output->NCid, output->TimeId, array)) != NC_NOERR) {
 		CMmsgPrint (CMmsgAppError, "NCError \"%s\" in: %s:%d\n",nc_strerror(status),__FILE__,__LINE__);
 		return (false);
@@ -204,9 +204,9 @@ bool outputCopyInput (void *inputPtr, void *outputPtr) {
 		CMmsgPrint (CMmsgAppError, "NCError \"%s\" in: %s:%d\n", nc_strerror(status),__FILE__,__LINE__);
 		return (false);
 	}
-	if (inputCopyAttributes (inputPtr,"time", output->NCid,output->TimeId) == false) return (false);
-	if (inputCopyAttributes (inputPtr,"lon",  output->NCid,output->LonId)  == false) return (false);
-	if (inputCopyAttributes (inputPtr,"lat",  output->NCid,output->LatId)  == false) return (false);
+	if (NCRinputCopyAttributes (inputPtr,"time", output->NCid,output->TimeId) == false) return (false);
+	if (NCRinputCopyAttributes (inputPtr,"lon",  output->NCid,output->LonId)  == false) return (false);
+	if (NCRinputCopyAttributes (inputPtr,"lat",  output->NCid,output->LatId)  == false) return (false);
 	if ((status = nc_enddef (output->NCid)) != NC_NOERR) {
 		CMmsgPrint (CMmsgAppError, "NCError \"%s\" in: %s:%d\n", nc_strerror(status),__FILE__,__LINE__);
 		return (false);

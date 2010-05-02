@@ -3,7 +3,7 @@
 
 #define RADIUS 6371.2213
 
-float sphericalDistance (float lon0, float lat0, float lon1, float lat1) {
+float NCRsphericalDistance (float lon0, float lat0, float lon1, float lat1) {
 	double cosC, sinC;
 	double distance;
 

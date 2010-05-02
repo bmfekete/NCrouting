@@ -5,7 +5,7 @@
 
 char *get_line (char *, int *, FILE *);
 
-typedef struct GFDLnetworkCell_s {
+typedef struct NCRnetworkCell_s {
 	size_t Id;
 	int   BasinId;
 	float Lon;
@@ -13,9 +13,9 @@ typedef struct GFDLnetworkCell_s {
 	float CellArea;
 	float CellLength;
 
-	struct GFDLnetworkCell_s *NextCell;
-	struct GFDLnetworkCell_s *PrevCell;
-	struct GFDLnetworkCell_s *ToCell;
+	struct NCRnetworkCell_s *NextCell;
+	struct NCRnetworkCell_s *PrevCell;
+	struct NCRnetworkCell_s *ToCell;
 	float Slope;
 	float MeanDischarge;
 	float Runoff;
@@ -23,26 +23,26 @@ typedef struct GFDLnetworkCell_s {
 	float Outflow;
 	float Storage;
 	float c [3];
-} NetworkCell_t;
+} NCRnetworkCell_t;
 
-NetworkCell_t *NetworkLoad (const char *);
-void NetworkCellFree (NetworkCell_t *);
-NetworkCell_t *NetworkLastCell (NetworkCell_t *);
+NCRnetworkCell_t *NCRnetworkLoad (const char *);
+void NCRnetworkCellFree (NCRnetworkCell_t *);
+NCRnetworkCell_t *NCRnetworkLastCell (NCRnetworkCell_t *);
 
 int    NCIgetDimension    (int, const char *);
 float *NCgetFloatVector (int, const char *, size_t *);
 
-float  sphericalDistance (float, float, float, float);
-void  *inputOpen   (NetworkCell_t *,size_t, const char *, const char *);
-void   inputClose  (void *);
-bool   inputLoad   (void *, size_t, NetworkCell_t *);
-float *inputTimeArray (void *);
-bool   inputCopyAttributes (void *,const char *, int, int);
-size_t inputTimeStepNum (void *);
-void  *outputOpen  (NetworkCell_t *, const char *, const char *);
-void   outputClose (void *);
-bool   outputWrite (void *, size_t, NetworkCell_t *);
-bool   outputCopyInput (void *, void *);
+float  NCRsphericalDistance (float, float, float, float);
+void  *NCRinputOpen   (NCRnetworkCell_t *,size_t, const char *, const char *);
+void   NCRinputClose  (void *);
+bool   NCRinputLoad   (void *, size_t, NCRnetworkCell_t *);
+float *NCRinputTimeArray (void *);
+bool   NCRinputCopyAttributes (void *,const char *, int, int);
+size_t NCRinputTimeStepNum (void *);
+void  *NCRoutputOpen  (NCRnetworkCell_t *, const char *, const char *);
+void   NCRoutputClose (void *);
+bool   NCRoutputWrite (void *, size_t, NCRnetworkCell_t *);
+bool   NCRoutputCopyInput (void *, void *);
 
-void   routingInitialize (NetworkCell_t *, float);
-bool   Routing (NetworkCell_t *, float dt);
+void   NCRroutingInitialize (NCRnetworkCell_t *, float);
+bool   NCRrouting (NCRnetworkCell_t *, float dt);

@@ -7,7 +7,7 @@ int main (int argc, char *argv []) {
 	int argPos, argNum = argc, nThreads = 1;
 	char *netName = (char *) NULL;
 	size_t timeStepNum, timeStep, timeHour;
-	NetworkCell_t *firstCell, *lastCell;
+	NCRnetworkCell_t *firstCell, *lastCell;
 	void *runoff, *outflow;
 	int dt = 6;
 
@@ -52,39 +52,39 @@ int main (int argc, char *argv []) {
 	}
 
 	CMmsgPrint (CMmsgInfo, "Loading cells\n");
-	if ((firstCell = NetworkLoad (netName)) == (NetworkCell_t *) NULL) return (-1);
-	lastCell = NetworkLastCell (firstCell);
-	routingInitialize (firstCell,(float) dt);
+	if ((firstCell = NCRnetworkLoad (netName)) == (NCRnetworkCell_t *) NULL) return (-1);
+	lastCell = NCRnetworkLastCell (firstCell);
+	NCRroutingInitialize (firstCell,(float) dt);
 
 	CMmsgPrint (CMmsgInfo, "Opening runoff\n");
-	if ((runoff = inputOpen (firstCell, lastCell->Id, argv [1], "runoff")) == (void *) NULL) {
-		NetworkCellFree (firstCell);
+	if ((runoff = NCRinputOpen (firstCell, lastCell->Id, argv [1], "runoff")) == (void *) NULL) {
+		NCRnetworkCellFree (firstCell);
 		return (-1);
 	}
-	if ((timeStepNum = inputTimeStepNum (runoff)) == 0) {
-		NetworkCellFree (firstCell);
-		inputClose (runoff);
+	if ((timeStepNum = NCRinputTimeStepNum (runoff)) == 0) {
+		NCRnetworkCellFree (firstCell);
+		NCRinputClose (runoff);
 		return (-1);
 	}
 
 	CMmsgPrint (CMmsgInfo, "Opening outflow\n");
-	if ((outflow = outputOpen (firstCell, argv [2], "outflow")) == (void *) NULL) {
-		NetworkCellFree (firstCell);
+	if ((outflow = NCRoutputOpen (firstCell, argv [2], "outflow")) == (void *) NULL) {
+		NCRnetworkCellFree (firstCell);
 		return (-1);
 	}
 	
 	CMmsgPrint (CMmsgInfo, "Start routing\n");
 	for (timeStep = 0;timeStep < timeStepNum; ++timeStep) {
-		inputLoad   (runoff,  timeStep, firstCell);
-		for (timeHour = 0;timeHour < 24;timeHour += dt) Routing (lastCell,(float) dt);
+		NCRinputLoad   (runoff,  timeStep, firstCell);
+		for (timeHour = 0;timeHour < 24;timeHour += dt) NCRrouting (lastCell,(float) dt);
 // TODO:	printf ("Timestep: %4d\n",(int) timeStep);
-		if (outputWrite (outflow, timeStep, firstCell) != true) {
+		if (NCRoutputWrite (outflow, timeStep, firstCell) != true) {
 			goto Stop;
 		}
 	}
-	outputCopyInput (runoff, outflow);
-	inputClose  (runoff);
+	NCRoutputCopyInput (runoff, outflow);
+	NCRinputClose  (runoff);
 Stop:
-	outputClose (outflow);
+	 NCRoutputClose (outflow);
 	return (0);
 }
