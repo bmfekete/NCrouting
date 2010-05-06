@@ -1,7 +1,7 @@
-#include<stdio.h>
-#include<string.h>
-#include<cm.h>
-#include<ncr.h>
+#include <stdio.h>
+#include <string.h>
+#include <cm.h>
+#include <ncr.h>
 
 int main (int argc, char *argv []) {
 	int argPos, argNum = argc, nThreads = 1;
