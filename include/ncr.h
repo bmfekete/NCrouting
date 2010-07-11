@@ -47,5 +47,5 @@ bool   NCRoutputWrite (void *, size_t, NCRnetwork_t *);
 bool   NCRoutputCopyInput (void *, void *);
 
 void   NCRroutingInitialize (NCRnetwork_t *, float);
-bool   NCRrouting (NCRnetwork_t *, float dt);
+bool   NCRrouting (NCRnetwork_t *);
 void   NCRroutingFunc (void *, void *,void *, size_t);

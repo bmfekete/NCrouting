@@ -46,6 +46,7 @@ void NCRroutingFunc (void *team, void *commonPtr,void *threadData, size_t cellId
 	NCRnetwork_t *network = (NCRnetwork_t *) commonPtr;
 	NCRnetworkCell_t *cell;
 
+	cellId = network->CellNum - cellId - 1;
 	cell = network->Cells [cellId];
 	cell->Inflow [1] += cell->Runoff;
 	cell->Outflow = cell->c [0] * cell->Inflow [1] + cell->c [1] * cell->Inflow [0] + cell->c [2] * cell->Outflow;
@@ -58,7 +59,7 @@ void NCRroutingFunc (void *team, void *commonPtr,void *threadData, size_t cellId
 	cell->Inflow [1] = 0;
 }
 
-bool NCRrouting (NCRnetwork_t *network, float dt) {
+bool NCRrouting (NCRnetwork_t *network) {
 	int cellId;
 	NCRnetworkCell_t *cell;
 

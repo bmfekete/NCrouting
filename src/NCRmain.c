@@ -76,15 +76,15 @@ int main (int argc, char *argv []) {
 	if (nThreads == 1) {
 		for (timeStep = 0;timeStep < timeStepNum; ++timeStep) {
 			NCRinputLoad   (runoff,  timeStep, network);
-			for (timeHour = 0;timeHour < 24;timeHour += dt) NCRrouting (network,(float) dt);
-// TODO:	printf ("Timestep: %4d\n",(int) timeStep);
-			if (NCRoutputWrite (outflow, timeStep, network) != true) {
-				goto Stop;
-			}
+			for (timeHour = 0;timeHour < 24;timeHour += dt) NCRrouting (network);
+			if (NCRoutputWrite (outflow, timeStep, network) != true) goto Stop;
 		}
+		NCRoutputCopyInput (runoff, outflow);
+		NCRinputClose  (runoff);
 	}
 	else {
-		size_t cellId, taskId, dLink;
+		int cellId;
+		size_t taskId, dLink;
 		NCRnetworkCell_t *cell;
 		CMthreadTeam_p team = CMthreadTeamCreate (nThreads);
 		CMthreadJob_p  job;
@@ -94,7 +94,7 @@ int main (int argc, char *argv []) {
 			CMthreadTeamDestroy (team,false);
 			goto Stop;
 		}
-		for (cellId = 0;cellId < network->CellNum; ++cellId) {
+		for (cellId = network->CellNum - 1;cellId >= 0; cellId--) {
 			cell = network->Cells [cellId];
 			taskId = network->CellNum - cellId - 1;
 			dLink  = cell->ToCellId > 0 ? network->CellNum - cell->ToCellId : taskId;
@@ -103,15 +103,13 @@ int main (int argc, char *argv []) {
 		for (timeStep = 0;timeStep < timeStepNum; ++timeStep) {
 			NCRinputLoad   (runoff,  timeStep, network);
 			for (timeHour = 0;timeHour < 24;timeHour += dt) CMthreadJobExecute (team, job);
-			if (NCRoutputWrite (outflow, timeStep, network) != true) {
-				goto Stop;
-			}
+			if (NCRoutputWrite (outflow, timeStep, network) != true) goto Stop;
 		}
+		NCRoutputCopyInput (runoff, outflow);
+		NCRinputClose  (runoff);
 		CMthreadJobDestroy  (job,(CMthreadUserFreeFunc) NULL);
 		CMthreadTeamDestroy (team,true);
 	}
-	NCRoutputCopyInput (runoff, outflow);
-	NCRinputClose  (runoff);
 Stop:
 	NCRoutputClose (outflow);
 	NCRnetworkFree (network);
