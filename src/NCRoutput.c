@@ -24,27 +24,27 @@ void NCRoutputClose (void *ptr) {
 	free (output);
 }
 
-void *NCRoutputOpen (NCRnetworkCell_t *firstCell, const char *target, const char *varName) {
+void *NCRoutputOpen (NCRnetwork_t *network, const char *target, const char *varName) {
 	int status, ncid, dimids [3], timeId, lonId, latId, varId;
-	size_t colNum, rowNum, col, row;
+	size_t colNum, rowNum, col, row, cellId;
 	float dx, dy, xMin, yMin, xMax, yMax;
 	float *array, missingVal = -9999.0;
-	NCRnetworkCell_t *curCell;
+	NCRnetworkCell_t *cell, *toCell;
 	NCRoutput_t *output;
 
 	dx = dy =
 	xMin = yMin =  HUGE_VAL;
 	xMax = yMax = -HUGE_VAL;
-	for (curCell = firstCell;curCell != (NCRnetworkCell_t *) NULL; curCell = curCell->NextCell) {
-		if (xMin > curCell->Lon) xMin = curCell->Lon;
-		if (yMin > curCell->Lat) yMin = curCell->Lat;
-		if (xMax < curCell->Lon) xMax = curCell->Lon;
-		if (yMax < curCell->Lat) yMax = curCell->Lat;
-		if (curCell->ToCell != (NCRnetworkCell_t *) NULL) {
-	   	if ((fabs (curCell->Lon - curCell->ToCell->Lon) > 0.0) && (fabs (curCell->Lon - curCell->ToCell->Lon) < dx))
-				dx = fabs (curCell->Lon - curCell->ToCell->Lon);
-			if ((fabs (curCell->Lat - curCell->ToCell->Lat) > 0.0) && (fabs (curCell->Lat - curCell->ToCell->Lat) < dy))
-				dy = fabs (curCell->Lat - curCell->ToCell->Lat);
+	for (cellId = 0;cellId < network->CellNum; cellId++) {
+		cell = network->Cells [cellId];
+		if (xMin > cell->Lon) xMin = cell->Lon;
+		if (yMin > cell->Lat) yMin = cell->Lat;
+		if (xMax < cell->Lon) xMax = cell->Lon;
+		if (yMax < cell->Lat) yMax = cell->Lat;
+		if (cell->ToCellId > 0) {
+			toCell = network->Cells [cell->ToCellId - 1];
+	   	if ((fabs (cell->Lon - toCell->Lon) > 0.0) && (fabs (cell->Lon - toCell->Lon) < dx)) dx = fabs (cell->Lon - toCell->Lon);
+		if ((fabs (cell->Lat - toCell->Lat) > 0.0) && (fabs (cell->Lat - toCell->Lat) < dy)) dy = fabs (cell->Lat - toCell->Lat);
 		}
 	}
 	colNum = (int) ((xMax - xMin) / dx) + 1;
@@ -166,11 +166,11 @@ void *NCRoutputOpen (NCRnetworkCell_t *firstCell, const char *target, const char
 	return (output);
 }
 
-bool NCRoutputWrite (void *ptr, size_t time_step, NCRnetworkCell_t *first_cell) {
+bool NCRoutputWrite (void *ptr, size_t time_step, NCRnetwork_t *network) {
 	int status;
-	size_t start [3], count [3], col, row;
+	size_t start [3], count [3], col, row, cellId;
 	NCRoutput_t *output = (NCRoutput_t *) ptr;
-	NCRnetworkCell_t *cur_cell;
+	NCRnetworkCell_t *cell;
 
 	if (output == (NCRoutput_t *) NULL) return (false);
 	start [0] = time_step;  count [0] = 1;
@@ -179,10 +179,11 @@ bool NCRoutputWrite (void *ptr, size_t time_step, NCRnetworkCell_t *first_cell) 
 	for (row = 0;row < output->RowNum; ++row)
 		for (col = 0;col < output->ColNum; ++col) output->Array [output->ColNum * row + col] = -9999.0;
 
-	for (cur_cell = first_cell; cur_cell != (NCRnetworkCell_t *) NULL; cur_cell = cur_cell->NextCell) {
-		col = (int) ((cur_cell->Lon - output->Xmin) / output->dX);
-		row = (int) ((cur_cell->Lat - output->Ymin) / output->dY);
-		output->Array [output->ColNum * row + col] =  cur_cell->Outflow;
+	for (cellId = 0; cellId < network->CellNum; cellId++) {
+		cell = network->Cells [cellId];
+		col = (int) ((cell->Lon - output->Xmin) / output->dX);
+		row = (int) ((cell->Lat - output->Ymin) / output->dY);
+		output->Array [output->ColNum * row + col] =  cell->Outflow;
 	}
 	if ((status = nc_put_vara_float (output->NCid, output->VarId, start, count, output->Array)) != NC_NOERR) {
 		CMmsgPrint (CMmsgAppError, "NCError \"%s\" in: %s:%d\n",nc_strerror(status),__FILE__,__LINE__); return (false);

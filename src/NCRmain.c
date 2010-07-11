@@ -7,7 +7,7 @@ int main (int argc, char *argv []) {
 	int argPos, argNum = argc, nThreads = 1;
 	char *netName = (char *) NULL;
 	size_t timeStepNum, timeStep, timeHour;
-	NCRnetworkCell_t *firstCell, *lastCell;
+	NCRnetwork_t *network;
 	void *runoff, *outflow;
 	int dt = 6;
 
@@ -52,39 +52,68 @@ int main (int argc, char *argv []) {
 	}
 
 	CMmsgPrint (CMmsgInfo, "Loading cells\n");
-	if ((firstCell = NCRnetworkLoad (netName)) == (NCRnetworkCell_t *) NULL) return (-1);
-	lastCell = NCRnetworkLastCell (firstCell);
-	NCRroutingInitialize (firstCell,(float) dt);
+	if ((network = NCRnetworkLoad (netName)) == (NCRnetwork_t *) NULL) return (-1);
+	NCRroutingInitialize (network,(float) dt);
 
 	CMmsgPrint (CMmsgInfo, "Opening runoff\n");
-	if ((runoff = NCRinputOpen (firstCell, lastCell->Id, argv [1], "runoff")) == (void *) NULL) {
-		NCRnetworkCellFree (firstCell);
+	if ((runoff = NCRinputOpen (network, argv [1], "runoff")) == (void *) NULL) {
+		NCRnetworkFree (network);
 		return (-1);
 	}
 	if ((timeStepNum = NCRinputTimeStepNum (runoff)) == 0) {
-		NCRnetworkCellFree (firstCell);
+		NCRnetworkFree (network);
 		NCRinputClose (runoff);
 		return (-1);
 	}
 
 	CMmsgPrint (CMmsgInfo, "Opening outflow\n");
-	if ((outflow = NCRoutputOpen (firstCell, argv [2], "outflow")) == (void *) NULL) {
-		NCRnetworkCellFree (firstCell);
+	if ((outflow = NCRoutputOpen (network, argv [2], "outflow")) == (void *) NULL) {
+		NCRnetworkFree (network);
 		return (-1);
 	}
 	
 	CMmsgPrint (CMmsgInfo, "Start routing\n");
-	for (timeStep = 0;timeStep < timeStepNum; ++timeStep) {
-		NCRinputLoad   (runoff,  timeStep, firstCell);
-		for (timeHour = 0;timeHour < 24;timeHour += dt) NCRrouting (lastCell,(float) dt);
+	if (nThreads == 1) {
+		for (timeStep = 0;timeStep < timeStepNum; ++timeStep) {
+			NCRinputLoad   (runoff,  timeStep, network);
+			for (timeHour = 0;timeHour < 24;timeHour += dt) NCRrouting (network,(float) dt);
 // TODO:	printf ("Timestep: %4d\n",(int) timeStep);
-		if (NCRoutputWrite (outflow, timeStep, firstCell) != true) {
+			if (NCRoutputWrite (outflow, timeStep, network) != true) {
+				goto Stop;
+			}
+		}
+	}
+	else {
+		size_t cellId, taskId, dLink;
+		NCRnetworkCell_t *cell;
+		CMthreadTeam_p team = CMthreadTeamCreate (nThreads);
+		CMthreadJob_p  job;
+
+		if ((job  = CMthreadJobCreate (team, (void *) network, network->CellNum, (CMthreadUserAllocFunc) NULL,NCRroutingFunc)) == (CMthreadJob_p) NULL) {
+			CMmsgPrint (CMmsgAppError, "Job creation error in %s:%d\n",__FILE__,__LINE__);
+			CMthreadTeamDestroy (team,false);
 			goto Stop;
 		}
+		for (cellId = 0;cellId < network->CellNum; ++cellId) {
+			cell = network->Cells [cellId];
+			taskId = network->CellNum - cellId - 1;
+			dLink  = cell->ToCellId > 0 ? network->CellNum - cell->ToCellId : taskId;
+			CMthreadJobTaskDependent (job, taskId, dLink);
+		}
+		for (timeStep = 0;timeStep < timeStepNum; ++timeStep) {
+			NCRinputLoad   (runoff,  timeStep, network);
+			for (timeHour = 0;timeHour < 24;timeHour += dt) CMthreadJobExecute (team, job);
+			if (NCRoutputWrite (outflow, timeStep, network) != true) {
+				goto Stop;
+			}
+		}
+		CMthreadJobDestroy  (job,(CMthreadUserFreeFunc) NULL);
+		CMthreadTeamDestroy (team,true);
 	}
 	NCRoutputCopyInput (runoff, outflow);
 	NCRinputClose  (runoff);
 Stop:
-	 NCRoutputClose (outflow);
+	NCRoutputClose (outflow);
+	NCRnetworkFree (network);
 	return (0);
 }

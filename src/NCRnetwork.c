@@ -1,87 +1,91 @@
 #include <ncr.h>
 #include <cm.h>
-static NCRnetworkCell_t *network_cell_create () {
+
+static NCRnetwork_t *_NCRnetworkCreate () {
+	NCRnetwork_t *network;
+
+	if ((network = (NCRnetwork_t *) malloc (sizeof (NCRnetwork_t))) == (NCRnetwork_t *) NULL) {
+		CMmsgPrint (CMmsgAppError,"Memory allocation error in: %s:%d\n",__FILE__,__LINE__);
+		return ((NCRnetwork_t *) NULL);
+	}
+	network->CellNum = 0;
+	network->Cells = (NCRnetworkCell_t **) NULL;
+	return (network);
+}
+
+static NCRnetworkCell_t *_NCRnetworkCellAdd (NCRnetwork_t *network) {
+
+	if ((network->Cells = realloc (network->Cells,(network->CellNum + 1) * sizeof (NCRnetworkCell_t *))) == (NCRnetworkCell_t **) NULL) {
+		CMmsgPrint (CMmsgAppError,"Memory allocation error in: %s:%d\n",__FILE__,__LINE__);
+		return ((NCRnetworkCell_t *) NULL);
+	}
+
+	if ((network->Cells [network->CellNum] = (NCRnetworkCell_t *) malloc (sizeof (NCRnetworkCell_t))) == (NCRnetworkCell_t *) NULL) {
+		CMmsgPrint (CMmsgAppError,"Memory allocation error in: %s:%d\n",__FILE__,__LINE__);
+		return ((NCRnetworkCell_t *) NULL);
+	}
+
+	network->Cells [network->CellNum]->Id = -1;
+	network->Cells [network->CellNum]->Runoff     = 0.0;
+	network->Cells [network->CellNum]->Inflow [0] = 0.0;
+	network->Cells [network->CellNum]->Inflow [1] = 0.0;
+	network->Cells [network->CellNum]->Outflow    = 0.0;
+	network->Cells [network->CellNum]->Storage    = 0.0;
+	network->Cells [network->CellNum]->c [0] = 1.0;
+	network->Cells [network->CellNum]->c [1] = 0.0;
+	network->Cells [network->CellNum]->c [2] = 0.0;
+	network->CellNum += 1;
+	return (network->Cells [network->CellNum - 1]);
+}
+
+void NCRnetworkFree (NCRnetwork_t *network) {
+	size_t cellId;;
+
+	for (cellId = 0;cellId < network->CellNum;++cellId) free (network->Cells [cellId]);
+	free (network->Cells);
+	free (network);
+}
+
+NCRnetwork_t *NCRnetworkLoad (const char *filename) {
+	FILE *fp;
+	int buffer_len = 0, cellId, toCellId;
+	char *buffer = (char *) NULL;
+	NCRnetwork_t *network;
 	NCRnetworkCell_t *cell;
 
-	if ((cell = (NCRnetworkCell_t *) malloc (sizeof (NCRnetworkCell_t))) == (NCRnetworkCell_t *) NULL) {
-		perror ("Memory allocation error in: network_cell_create ()");
-		return ((NCRnetworkCell_t *) NULL);
-	}
-
-	cell->Id = -1;
-	cell->NextCell = cell->PrevCell = cell->ToCell = (NCRnetworkCell_t *) NULL;
-	cell->Runoff     = 0.0;
-	cell->Inflow [0] = 0.0;
-	cell->Inflow [1] = 0.0;
-	cell->Outflow    = 0.0;
-	cell->Storage    = 0.0;
-	cell->c [0] = 1.0;
-	cell->c [1] = 0.0;
-	cell->c [2] = 0.0;
-	return (cell);
-}
-
-void NCRnetworkCellFree (NCRnetworkCell_t *cur_cell) {
-	NCRnetworkCell_t *next_cell;
-
-	while (cur_cell != (NCRnetworkCell_t *) NULL) {
-		next_cell = cur_cell->NextCell;
-		free (cur_cell);
-		cur_cell = next_cell;
-	}
-}
-
-NCRnetworkCell_t *NCRnetworkLastCell (NCRnetworkCell_t *cur_cell) {
-	if (cur_cell != (NCRnetworkCell_t *) NULL)
-		while (cur_cell->NextCell != (NCRnetworkCell_t *) NULL) cur_cell = cur_cell->NextCell;
-	return (cur_cell);
-}
-
-NCRnetworkCell_t *NCRnetworkLoad (const char *filename) {
-	FILE *fp;
-	int buffer_len = 0, cell_id, to_cell_id;
-	char *buffer = (char *) NULL;
-	NCRnetworkCell_t *first_cell = (NCRnetworkCell_t *) NULL;
-	NCRnetworkCell_t *cur_cell   = (NCRnetworkCell_t *) NULL;
-	NCRnetworkCell_t *next_cell, *to_cell;
-
 	if ((fp = fopen (filename,"r")) == (FILE *) NULL) {
-		perror ("File opening error in: network_load ()");
-		return ((NCRnetworkCell_t *) NULL);
+		CMmsgPrint (CMmsgAppError,"File opening error in: %s:%d\n",__FILE__,__LINE__);
+		return ((NCRnetwork_t *) NULL);
 	}
 
 	if ((buffer = CMbufGetLine (buffer, &buffer_len, fp)) == (char *) NULL) {
-		perror ("File reading error in: network_load ()");
-		return ((NCRnetworkCell_t *) NULL);
+		CMmsgPrint (CMmsgAppError,"File reading error in: %s:%d\n",__FILE__,__LINE__);
+		fclose (fp);
+		return ((NCRnetwork_t *) NULL);
 	}
-
+	if ((network = _NCRnetworkCreate ()) == (NCRnetwork_t *) NULL) {
+		CMmsgPrint (CMmsgAppError,"Network creation error in: %s:%d\n",__FILE__,__LINE__);
+		free (buffer);
+		fclose (fp);
+		return ((NCRnetwork_t *) NULL);
+	}
 	while ((buffer = CMbufGetLine (buffer, &buffer_len, fp)) != (char *) NULL) {
-		if ((cur_cell = network_cell_create ()) == (NCRnetworkCell_t *) NULL) {
-			NCRnetworkCellFree (first_cell);
-			return ((NCRnetworkCell_t *) NULL);
+		if ((cell = _NCRnetworkCellAdd (network)) == (NCRnetworkCell_t *) NULL) {
+			NCRnetworkFree (network);
+			fclose (fp);
+			return ((NCRnetwork_t *) NULL);
 		}
 		
-		if (first_cell == (NCRnetworkCell_t *) NULL) first_cell = next_cell = cur_cell;
-		else { cur_cell->PrevCell = next_cell; next_cell->NextCell = cur_cell; next_cell = cur_cell; }
-
-		if (sscanf (buffer,"%d %f %f %d %d %f %f %f %f\n",&cell_id, &cur_cell->Lon, &cur_cell->Lat, &cur_cell->BasinId,
-		            &to_cell_id, &cur_cell->CellArea, &cur_cell->CellLength, &cur_cell->Slope, &cur_cell->MeanDischarge) != 9) {
-			perror ("File reading error in: network_load ()");
-			NCRnetworkCellFree (first_cell);
-			return ((NCRnetworkCell_t *) NULL);
+		if (sscanf (buffer,"%d %f %f %d %d %f %f %f %f\n",&cellId, &cell->Lon, &cell->Lat, &cell->BasinId,
+		            &toCellId, &cell->CellArea, &cell->CellLength, &cell->Slope, &cell->MeanDischarge) != 9) {
+			CMmsgPrint (CMmsgAppError,"File reading error in: %s:%d\n",__FILE__,__LINE__);
+			NCRnetworkFree (network);
+			fclose (fp);
+			return ((NCRnetwork_t *) NULL);
 		}
-		cur_cell->Id = cell_id;
-		if (to_cell_id > -1) {
-			to_cell = cur_cell;
-			while ((to_cell != (NCRnetworkCell_t *) NULL) && (to_cell->Id != to_cell_id)) to_cell = to_cell->PrevCell;
-			if (to_cell == (NCRnetworkCell_t *) NULL) {
-				fprintf (stderr,"Corrupt network in: network_load ()\n");
-				NCRnetworkCellFree (first_cell);
-				return ((NCRnetworkCell_t *) NULL);
-			}
-			else cur_cell->ToCell = to_cell;
-		}
+		cell->Id       = cellId;
+		cell->ToCellId = toCellId;
 	}
 	fclose (fp);
-	return (first_cell);
+	return (network);
 }
