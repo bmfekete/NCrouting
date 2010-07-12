@@ -48,4 +48,4 @@ bool   NCRoutputCopyInput (void *, void *);
 
 void   NCRroutingInitialize (NCRnetwork_t *, float);
 bool   NCRrouting (NCRnetwork_t *);
-void   NCRroutingFunc (void *, void *,void *, size_t);
+void   NCRroutingFunc (void *,void *, size_t);

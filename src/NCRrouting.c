@@ -42,7 +42,7 @@ void NCRroutingInitialize (NCRnetwork_t *network, float dt) {
 	}
 }
 
-void NCRroutingFunc (void *team, void *commonPtr,void *threadData, size_t cellId) {
+void NCRroutingFunc (void *commonPtr,void *threadData, size_t cellId) {
 	NCRnetwork_t *network = (NCRnetwork_t *) commonPtr;
 	NCRnetworkCell_t *cell;
 
@@ -51,9 +51,7 @@ void NCRroutingFunc (void *team, void *commonPtr,void *threadData, size_t cellId
 	cell->Inflow [1] += cell->Runoff;
 	cell->Outflow = cell->c [0] * cell->Inflow [1] + cell->c [1] * cell->Inflow [0] + cell->c [2] * cell->Outflow;
 	if (cell->ToCellId > 0) {
-		CMthreadLock (team);
 		network->Cells [cell->ToCellId - 1]->Inflow [1] += cell->Outflow;
-		CMthreadUnlock (team);
 	}
 	cell->Inflow [0] = cell->Inflow [1];
 	cell->Inflow [1] = 0;

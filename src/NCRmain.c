@@ -94,12 +94,14 @@ int main (int argc, char *argv []) {
 			CMthreadTeamDestroy (team,false);
 			goto Stop;
 		}
-		for (cellId = network->CellNum - 1;cellId >= 0; cellId--) {
+		for (cellId = 0; cellId < network->CellNum; cellId++) {
 			cell = network->Cells [cellId];
 			taskId = network->CellNum - cellId - 1;
 			dLink  = cell->ToCellId > 0 ? network->CellNum - cell->ToCellId : taskId;
 			CMthreadJobTaskDependent (job, taskId, dLink);
 		}
+		CMthreadJobTaskSort (job);
+		CMmsgPrint (CMmsgInfo,"Sort Completed\n");
 		for (timeStep = 0;timeStep < timeStepNum; ++timeStep) {
 			NCRinputLoad   (runoff,  timeStep, network);
 			for (timeHour = 0;timeHour < 24;timeHour += dt) CMthreadJobExecute (team, job);
