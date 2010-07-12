@@ -79,8 +79,6 @@ int main (int argc, char *argv []) {
 			for (timeHour = 0;timeHour < 24;timeHour += dt) NCRrouting (network);
 			if (NCRoutputWrite (outflow, timeStep, network) != true) goto Stop;
 		}
-		NCRoutputCopyInput (runoff, outflow);
-		NCRinputClose  (runoff);
 	}
 	else {
 		int cellId;
@@ -100,18 +98,16 @@ int main (int argc, char *argv []) {
 			dLink  = cell->ToCellId > 0 ? network->CellNum - cell->ToCellId : taskId;
 			CMthreadJobTaskDependent (job, taskId, dLink);
 		}
-		CMthreadJobTaskSort (job);
-		CMmsgPrint (CMmsgInfo,"Sort Completed\n");
 		for (timeStep = 0;timeStep < timeStepNum; ++timeStep) {
 			NCRinputLoad   (runoff,  timeStep, network);
 			for (timeHour = 0;timeHour < 24;timeHour += dt) CMthreadJobExecute (team, job);
 			if (NCRoutputWrite (outflow, timeStep, network) != true) goto Stop;
 		}
-		NCRoutputCopyInput (runoff, outflow);
-		NCRinputClose  (runoff);
 		CMthreadJobDestroy  (job,(CMthreadUserFreeFunc) NULL);
 		CMthreadTeamDestroy (team,true);
 	}
+	NCRoutputCopyInput (runoff, outflow);
+	NCRinputClose  (runoff);
 Stop:
 	NCRoutputClose (outflow);
 	NCRnetworkFree (network);
