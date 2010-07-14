@@ -10,6 +10,7 @@ int main (int argc, char *argv []) {
 	NCRnetwork_t *network;
 	void *runoff, *outflow;
 	int dt = 6;
+	int cellId;
 
 	for (argPos = 1;argPos < argNum; ) {
 		if (CMargTest (argv [argPos],"-n","--network")) {
@@ -76,12 +77,13 @@ int main (int argc, char *argv []) {
 	if (nThreads == 1) {
 		for (timeStep = 0;timeStep < timeStepNum; ++timeStep) {
 			NCRinputLoad   (runoff,  timeStep, network);
-			for (timeHour = 0;timeHour < 24;timeHour += dt) NCRrouting (network);
+			for (timeHour = 0;timeHour < 24;timeHour += dt)
+				for (cellId = 0;cellId < network->CellNum; cellId++)
+					NCRroutingFunc ((void *) network,(void *) NULL, cellId);
 			if (NCRoutputWrite (outflow, timeStep, network) != true) goto Stop;
 		}
 	}
 	else {
-		int cellId;
 		size_t taskId, dLink;
 		NCRnetworkCell_t *cell;
 		CMthreadTeam_p team = CMthreadTeamCreate (nThreads);
