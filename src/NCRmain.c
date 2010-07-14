@@ -91,7 +91,7 @@ int main (int argc, char *argv []) {
 
 		if ((job  = CMthreadJobCreate (team, (void *) network, network->CellNum, (CMthreadUserAllocFunc) NULL,NCRroutingFunc)) == (CMthreadJob_p) NULL) {
 			CMmsgPrint (CMmsgAppError, "Job creation error in %s:%d\n",__FILE__,__LINE__);
-			CMthreadTeamDestroy (team,false);
+			CMthreadTeamDestroy (team);
 			goto Stop;
 		}
 		for (cellId = 0; cellId < network->CellNum; cellId++) {
@@ -106,7 +106,7 @@ int main (int argc, char *argv []) {
 			if (NCRoutputWrite (outflow, timeStep, network) != true) goto Stop;
 		}
 		CMthreadJobDestroy  (job,(CMthreadUserFreeFunc) NULL);
-		CMthreadTeamDestroy (team,true);
+		CMthreadTeamDestroy (team);
 	}
 	NCRoutputCopyInput (runoff, outflow);
 	NCRinputClose  (runoff);
