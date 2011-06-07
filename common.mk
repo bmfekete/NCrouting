@@ -1,21 +1,15 @@
 UNIX=$(shell uname)
 
-ifeq ($(UNIX),Linux)
-export UNIXCC=gcc
-export UNIXCCOPS=-g -Wall -pthread -fsigned-char -D_GNU_SOURCE
-export UNIXLIBS=-pthread  -lnetcdf -ludunits2 -lm
-export UNIXMAKE=make
-endif
 ifeq ($(UNIX),Darwin)
+ifndef ($(CUSTOM_INC))
+	CUSTOM_INC=-I/sw/include
+endif
+ifndef ($(CUSTOM_LIB))
+	CUSTOM_LIB=-L/sw/lib
+endif
+endif
+
 export UNIXCC=gcc
-export UNIXCCOPS=-g -Wall -pthread -fsigned-char -D_GNU_SOURCE -I/sw/include
-export UNIXLIBS=-L/sw/lib -pthread -lnetcdf -ludunits2 -lm
+export UNIXCCOPS=-g -Wall -pthread -fsigned-char -D_GNU_SOURCE $(CUSTOM_INC)
+export UNIXLIBS=$(CUSTOM_LIB) -pthread -lnetcdf -ludunits2 -lm
 export UNIXMAKE=make
-endif
-ifeq ($(UNIX),SunOS)
-export UNIXAR=ar -ru
-export UNIXCC=gcc
-export UNIXCCOPS=-g -Wall -pthread -fsigned-char -D_GNU_SOURCE
-export UNIXLIBS=-pthread -lm
-export UNIXMAKE=gmake
-endif
