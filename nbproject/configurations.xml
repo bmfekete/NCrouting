@@ -45,15 +45,16 @@
           <executablePath></executablePath>
           <cTool>
             <incDir>
-              <pElem>/Users/ecr/balazs/NetBeans/CMlib/include</pElem>
-              <pElem>/Users/ecr/balazs/NetBeans/NCrouting/include</pElem>
+              <pElem>../CMlib/include</pElem>
+              <pElem>include</pElem>
               <pElem>/sw/include</pElem>
             </incDir>
           </cTool>
           <ccTool>
             <incDir>
-              <pElem>/Users/ecr/balazs/NetBeans/CMlib/include</pElem>
-              <pElem>/Users/ecr/balazs/NetBeans/NCrouting/include</pElem>
+              <pElem>../CMlib/include</pElem>
+              <pElem>include</pElem>
+              <pElem>/sw/include</pElem>
             </incDir>
           </ccTool>
         </makeTool>
