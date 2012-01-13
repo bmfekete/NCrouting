@@ -1,0 +1,8 @@
+/bin/routing.bin
+/obj/NCRdistance.o
+/obj/NCRinput.o
+/obj/NCRmain.o
+/obj/NCRnci.o
+/obj/NCRnetwork.o
+/obj/NCRoutput.o
+/obj/NCRrouting.o
