@@ -1,4 +1,7 @@
 UNIX=$(shell uname)
+ifndef GHAASDIR
+export GHAASDIR=/usr/local/share/ghaas
+endif
 
 ifeq ($(UNIX),Darwin)
 ifndef ($(CUSTOM_INC))

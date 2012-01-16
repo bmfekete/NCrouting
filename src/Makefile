@@ -3,9 +3,9 @@ INC    = ../include
 SRC    = ../src
 OBJ    = ../obj
 BIN    = ../bin
-CC     = gcc $(UNIXCCOPS) -I$(INC) -I../../CMlib/include -I../../MFlib/include
+CC     = gcc $(UNIXCCOPS) -I$(INC) -I$(GHAASDIR)/include
 LINK   = gcc
-LIBS   = -L../../CMlib/lib -lCM10 $(UNIXLIBS)
+LIBS   = -L$(GHAASDIR)/lib -lCM10 $(UNIXLIBS)
 
 TARGET = $(BIN)/routing.bin
 
