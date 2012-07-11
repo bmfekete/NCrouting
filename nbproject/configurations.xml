@@ -45,14 +45,14 @@
           <executablePath></executablePath>
           <cTool>
             <incDir>
-              <pElem>../CMlib/include</pElem>
+              <pElem>/usr/local/share/ghaas/include</pElem>
               <pElem>include</pElem>
               <pElem>/sw/include</pElem>
             </incDir>
           </cTool>
           <ccTool>
             <incDir>
-              <pElem>../CMlib/include</pElem>
+              <pElem>/usr/local/share/ghaas/include</pElem>
               <pElem>include</pElem>
               <pElem>/sw/include</pElem>
             </incDir>
