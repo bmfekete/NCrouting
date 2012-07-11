@@ -15,7 +15,7 @@ int main (int argc, char *argv []) {
 	for (argPos = 1;argPos < argNum; ) {
 		if (CMargTest (argv [argPos],"-n","--network")) {
 			if ((argNum = CMargShiftLeft (argPos,argv,argNum)) <= argPos) {
-				CMmsgPrint (CMmsgUsrError,"%s: Missing sampling coverage!\n",CMprgName (argv [0]));
+				CMmsgPrint (CMmsgUsrError,"%s: Missing sampling coverage!\n",CMfileName (argv [0]));
 				return (-1);
 			}
 			netName = argv [argPos];
@@ -24,18 +24,18 @@ int main (int argc, char *argv []) {
 		}
 		if (CMargTest (argv [argPos],"-p","--threads")) {
 			if ((argNum = CMargShiftLeft (argPos,argv,argNum)) <= argPos) {
-				CMmsgPrint (CMmsgUsrError,"%s: Missing sampling coverage!\n",CMprgName (argv [0]));
+				CMmsgPrint (CMmsgUsrError,"%s: Missing sampling coverage!\n",CMfileName (argv [0]));
 				return (-1);
 			}
 			if (sscanf (argv [argPos],"%d",&nThreads) != 1) {
-				CMmsgPrint (CMmsgUsrError,"%s: Invalid threads [%s]\n",CMprgName (argv [0]), argv [argPos]);
+				CMmsgPrint (CMmsgUsrError,"%s: Invalid threads [%s]\n",CMfileName (argv [0]), argv [argPos]);
 				return (-1);
 			}
 			argNum = CMargShiftLeft (argPos,argv,argNum);
 			continue;
 		}
 		if (CMargTest (argv [argPos],"-h","--help")) {
-			CMmsgPrint (CMmsgInfo,"%s [options] <nc grid> <nc grid>\n", CMprgName(argv [0]));
+			CMmsgPrint (CMmsgInfo,"%s [options] <nc grid> <nc grid>\n", CMfileName(argv [0]));
 			CMmsgPrint (CMmsgInfo,"     -n,--network\n");
 			CMmsgPrint (CMmsgInfo,"     -p,--threads\n");
 			CMmsgPrint (CMmsgInfo,"     -h,--help\n");
@@ -48,7 +48,7 @@ int main (int argc, char *argv []) {
 		argPos++;
 	}
 	if (argNum != 3) {
-		CMmsgPrint (CMmsgInfo,"%s: %s!\n", CMprgName (argv [0]), argNum < 3 ? "Missing runoff" : "Extra arguments");
+		CMmsgPrint (CMmsgInfo,"%s: %s!\n", CMfileName (argv [0]), argNum < 3 ? "Missing runoff" : "Extra arguments");
 		return (-1);
 	}
 
