@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="80">
+<configurationDescriptor version="84">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df name="NCrouting" root=".">
       <df name="bin">
@@ -37,6 +37,8 @@
         <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
         <compilerSet>default</compilerSet>
       </toolsSet>
+      <codeAssistance>
+      </codeAssistance>
       <makefileType>
         <makeTool>
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
@@ -45,58 +47,58 @@
           <executablePath></executablePath>
           <cTool>
             <incDir>
+              <pElem>/sw/include</pElem>
               <pElem>/usr/local/share/ghaas/include</pElem>
               <pElem>include</pElem>
-              <pElem>/sw/include</pElem>
             </incDir>
           </cTool>
           <ccTool>
             <incDir>
+              <pElem>/sw/include</pElem>
               <pElem>/usr/local/share/ghaas/include</pElem>
               <pElem>include</pElem>
-              <pElem>/sw/include</pElem>
             </incDir>
           </ccTool>
         </makeTool>
       </makefileType>
-      <item path="include/ncr.h" ex="true" tool="3" flavor="0">
+      <item path="include/ncr.h" ex="true" tool="3" flavor2="0">
       </item>
-      <item path="src/NCRdistance.c" ex="false" tool="0" flavor="0">
+      <item path="src/NCRdistance.c" ex="false" tool="0" flavor2="0">
         <cTool>
           <incDir>
             <pElem>include</pElem>
           </incDir>
         </cTool>
       </item>
-      <item path="src/NCRinput.c" ex="false" tool="0" flavor="0">
+      <item path="src/NCRinput.c" ex="false" tool="0" flavor2="0">
         <cTool>
           <incDir>
             <pElem>include</pElem>
           </incDir>
         </cTool>
       </item>
-      <item path="src/NCRmain.c" ex="false" tool="0" flavor="0">
+      <item path="src/NCRmain.c" ex="false" tool="0" flavor2="0">
         <cTool>
           <incDir>
             <pElem>include</pElem>
           </incDir>
         </cTool>
       </item>
-      <item path="src/NCRnetwork.c" ex="false" tool="0" flavor="0">
+      <item path="src/NCRnetwork.c" ex="false" tool="0" flavor2="0">
         <cTool>
           <incDir>
             <pElem>include</pElem>
           </incDir>
         </cTool>
       </item>
-      <item path="src/NCRoutput.c" ex="false" tool="0" flavor="0">
+      <item path="src/NCRoutput.c" ex="false" tool="0" flavor2="0">
         <cTool>
           <incDir>
             <pElem>include</pElem>
           </incDir>
         </cTool>
       </item>
-      <item path="src/NCRrouting.c" ex="false" tool="0" flavor="0">
+      <item path="src/NCRrouting.c" ex="false" tool="0" flavor2="0">
         <cTool>
           <incDir>
             <pElem>include</pElem>
