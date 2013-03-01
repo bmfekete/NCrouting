@@ -2,12 +2,8 @@
 <configurationDescriptor version="84">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df name="NCrouting" root=".">
-      <df name="bin">
-      </df>
       <df name="include">
         <in>ncr.h</in>
-      </df>
-      <df name="obj">
       </df>
       <df name="src">
         <in>NCRdistance.c</in>
@@ -47,16 +43,16 @@
           <executablePath></executablePath>
           <cTool>
             <incDir>
-              <pElem>/sw/include</pElem>
-              <pElem>/usr/local/share/ghaas/include</pElem>
+              <pElem>../CMlib/include</pElem>
               <pElem>include</pElem>
+              <pElem>/sw/include</pElem>
             </incDir>
           </cTool>
           <ccTool>
             <incDir>
-              <pElem>/sw/include</pElem>
-              <pElem>/usr/local/share/ghaas/include</pElem>
+              <pElem>../CMlib/include</pElem>
               <pElem>include</pElem>
+              <pElem>/sw/include</pElem>
             </incDir>
           </ccTool>
         </makeTool>
